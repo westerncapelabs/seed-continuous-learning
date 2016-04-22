@@ -210,6 +210,38 @@ class TestQuizzesApp(AuthenticatedAPITestCase):
         self.assertEqual(d.questions.all().count(), 1)
         self.assertEqual(d.created_by, self.user)
 
+    def test_create_quiz_listing(self):
+        question1 = self.make_question()
+        quiz1_data = {
+            "description": "A wonderful quiz 1",
+            "active": True,
+            "metadata": {'a': 'a', 'b': 2},
+            "questions": [str(question1.id)]
+        }
+        self.client.post('/api/v1/quiz/', json.dumps(quiz1_data),
+                         content_type='application/json')
+        question2 = self.make_question()
+        quiz2_data = {
+            "description": "A wonderful quiz 2",
+            "active": True,
+            "metadata": {'a': 'a', 'b': 2},
+            "questions": [str(question2.id)]
+        }
+        self.client.post('/api/v1/quiz/', json.dumps(quiz2_data),
+                         content_type='application/json')
+
+        response = self.client.get('/api/v1/quiz/',
+                                   content_type='application/json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        results = response.json()["results"]
+
+        self.assertEqual(len(results), 2)
+        self.assertEqual(results[0]["description"], "A wonderful quiz 1")
+        self.assertEqual(results[0]["questions"], [str(question1.id)])
+        self.assertEqual(results[1]["description"], "A wonderful quiz 2")
+
     def test_create_webhook(self):
         # Setup
         user = User.objects.get(username='testadminuser')
