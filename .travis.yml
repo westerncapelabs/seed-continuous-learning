@@ -1,0 +1,14 @@
+language: python
+python:
+  - "2.7"
+  - "3.4"
+addons:
+  postgresql: "9.4"
+services:
+  - postgresql
+install:
+  - "pip install -e . --use-mirrors"
+  - "pip install -r requirements-dev.txt --use-wheel"
+script:
+  - flake8 .
+  - py.test --ds=seed_continuous_learning.testsettings */tests.py
