@@ -8,8 +8,8 @@ class QuizSerializer(serializers.ModelSerializer):
     class Meta:
         model = Quiz
         read_only_fields = ('created_at', 'updated_at')
-        fields = ('id', 'description', 'metadata', 'created_at',
-                  'created_by', 'updated_at', 'updated_by')
+        fields = ('id', 'description', 'metadata', 'questions', 'active',
+                  'created_at', 'created_by', 'updated_at', 'updated_by')
 
 
 class QuestionSerializer(serializers.ModelSerializer):

@@ -45,6 +45,45 @@ class AuthenticatedAPITestCase(APITestCase):
 
 class TestQuizzesApp(AuthenticatedAPITestCase):
 
+    def make_question(self, question_data=None):
+        if question_data is None:
+            question_data = {
+                "question_type": "multiplechoice",
+                "question": "Who is shortest?",
+                "answers": [
+                    {
+                        "value": "mike",
+                        "text": "Mike",
+                        "correct": False
+                    },
+                    {
+                        "value": "nicki",
+                        "text": "Nicki",
+                        "correct": False
+                    },
+                    {
+                        "value": "george",
+                        "text": "George",
+                        "correct": True
+                    }
+                ],
+                "response_correct": "Correct! That's why his desk is so low!",
+                "response_incorrect": "Incorrect! You need to open your eyes "
+                                      "and see it's George!",
+                "active": True
+            }
+        question = Question.objects.create(**question_data)
+        return question
+
+    def make_quiz(self, quiz_data=None):
+        if quiz_data is None:
+            quiz_data = {
+                "description": "A wonderful quiz",
+                "metadata": {'a': 'a', 'b': 2}
+            }
+        quiz = Quiz.objects.create(**quiz_data)
+        return quiz
+
     def test_login(self):
         request = self.client.post(
             '/api/token-auth/',
@@ -70,6 +109,7 @@ class TestQuizzesApp(AuthenticatedAPITestCase):
         d = Quiz.objects.last()
         self.assertEqual(d.description, 'A wonderful quiz')
         self.assertEqual(d.metadata, {'a': 'a', 'b': 2})
+        self.assertEqual(d.active, False)
         self.assertEqual(d.created_by, self.user)
 
     def test_create_question_model_data(self):
@@ -148,6 +188,27 @@ class TestQuizzesApp(AuthenticatedAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json()["question_type"][0],
                          '"yesno" is not a valid choice.')
+
+    def test_create_quiz_with_question(self):
+        question = self.make_question()
+        post_data = {
+            "description": "A wonderful quiz",
+            "active": True,
+            "metadata": {'a': 'a', 'b': 2},
+            "questions": [str(question.id)]
+        }
+        response = self.client.post('/api/v1/quiz/',
+                                    json.dumps(post_data),
+                                    content_type='application/json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        d = Quiz.objects.last()
+        self.assertEqual(d.description, 'A wonderful quiz')
+        self.assertEqual(d.metadata, {'a': 'a', 'b': 2})
+        self.assertEqual(d.active, True)
+        self.assertEqual(d.questions.all().count(), 1)
+        self.assertEqual(d.created_by, self.user)
 
     def test_create_webhook(self):
         # Setup
