@@ -131,7 +131,8 @@ REST_FRAMEWORK = {
 # Webhook event definition
 HOOK_EVENTS = {
     # 'any.event.name': 'App.Model.Action' (created/updated/deleted)
-    'quiz.created': 'quizzes.quiz.created'
+    'quiz.created': 'quizzes.quiz.created',
+    'question.created': 'quizzes.question.created',
 }
 
 HOOK_DELIVERER = 'seed_continuous_learning.tasks.deliver_hook_wrapper'

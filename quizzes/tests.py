@@ -7,7 +7,7 @@ from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 from rest_hooks.models import Hook
 
-from .models import Quiz
+from .models import Quiz, Question
 
 
 class APITestCase(TestCase):
@@ -71,6 +71,83 @@ class TestQuizzesApp(AuthenticatedAPITestCase):
         self.assertEqual(d.description, 'A wonderful quiz')
         self.assertEqual(d.metadata, {'a': 'a', 'b': 2})
         self.assertEqual(d.created_by, self.user)
+
+    def test_create_question_model_data(self):
+        post_data = {
+            "question_type": "multiplechoice",
+            "question": "Who is tallest?",
+            "answers": [
+                {
+                    "value": "mike",
+                    "text": "Mike",
+                    "correct": False
+                },
+                {
+                    "value": "nicki",
+                    "text": "Nicki",
+                    "correct": True
+                },
+                {
+                    "value": "george",
+                    "text": "George",
+                    "correct": False
+                }
+            ],
+            "response_correct": "Correct! That's why only he bangs his head "
+                                "on the lamp!",
+            "response_incorrect": "Incorrect! You need to open your eyes and "
+                                  "see it's Nicki!",
+            "active": True
+        }
+        response = self.client.post('/api/v1/question/',
+                                    json.dumps(post_data),
+                                    content_type='application/json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        d = Question.objects.last()
+        self.assertEqual(d.version, 1)
+        self.assertEqual(d.question_type, "multiplechoice")
+        self.assertEqual(d.question, "Who is tallest?")
+        self.assertEqual(len(d.answers), 3)
+        self.assertEqual(d.answers[0], {
+            "value": "mike",
+            "text": "Mike",
+            "correct": False
+        })
+        self.assertEqual(d.response_correct, "Correct! That's why only he "
+                                             "bangs his head on the lamp!")
+        self.assertEqual(d.response_incorrect, "Incorrect! You need to open "
+                                               "your eyes and see it's Nicki!")
+        self.assertEqual(d.created_by, self.user)
+
+    def test_create_question_model_data_bad_type(self):
+        post_data = {
+            "question_type": "yesno",
+            "question": "Is the sun hot?",
+            "answers": [
+                {
+                    "value": "yes",
+                    "text": "Yes",
+                    "correct": True
+                },
+                {
+                    "value": "no",
+                    "text": "No",
+                    "correct": False
+                }
+            ],
+            "response_correct": "Correct! It's very hot!",
+            "response_incorrect": "Incorrect! Have you felt it's power?",
+            "active": True
+        }
+        response = self.client.post('/api/v1/question/',
+                                    json.dumps(post_data),
+                                    content_type='application/json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json()["question_type"][0],
+                         '"yesno" is not a valid choice.')
 
     def test_create_webhook(self):
         # Setup
