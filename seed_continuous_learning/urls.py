@@ -2,7 +2,8 @@ import os
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 
-admin.site.site_header = os.environ.get('CONTINUOUS_LEARNING_TITLE', 'seed_continuous_learning Admin')
+admin.site.site_header = os.environ.get('CONTINUOUS_LEARNING_TITLE',
+                                        'Seed Continuous Learning Admin')
 
 
 urlpatterns = patterns(
