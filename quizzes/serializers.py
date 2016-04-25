@@ -1,4 +1,4 @@
-from .models import Quiz, Question
+from .models import Quiz, Question, Tracker
 from rest_hooks.models import Hook
 from rest_framework import serializers
 
@@ -20,6 +20,15 @@ class QuestionSerializer(serializers.ModelSerializer):
         fields = ('id', 'version', 'question_type', 'question', 'answers',
                   'response_correct', 'response_incorrect', 'active',
                   'created_at', 'created_by', 'updated_at', 'updated_by')
+
+
+class TrackerSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Tracker
+        read_only_fields = ('started_at', )
+        fields = ('id', 'identity', 'quiz', 'complete', 'metadata',
+                  'started_at', 'created_by', 'completed_at', 'updated_by')
 
 
 class HookSerializer(serializers.ModelSerializer):

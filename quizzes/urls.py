@@ -5,6 +5,7 @@ from . import views
 router = routers.DefaultRouter()
 router.register(r'quiz', views.QuizViewSet)
 router.register(r'question', views.QuestionViewSet)
+router.register(r'tracker', views.TrackerViewSet)
 router.register(r'webhook', views.HookViewSet)
 
 # Wire up our API using automatic URL routing.

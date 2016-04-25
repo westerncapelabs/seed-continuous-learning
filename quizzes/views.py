@@ -1,8 +1,9 @@
-from .models import Quiz, Question
+from .models import Quiz, Question, Tracker
 from rest_hooks.models import Hook
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from .serializers import (QuizSerializer, QuestionSerializer, HookSerializer)
+from .serializers import (QuizSerializer, QuestionSerializer,
+                          TrackerSerializer, HookSerializer)
 
 
 class HookViewSet(viewsets.ModelViewSet):
@@ -20,7 +21,7 @@ class HookViewSet(viewsets.ModelViewSet):
 class QuizViewSet(viewsets.ModelViewSet):
 
     """
-    API endpoint that allows dummy models to be viewed or edited.
+    API endpoint that allows Quiz models to be viewed or edited.
     """
     permission_classes = (IsAuthenticated,)
     queryset = Quiz.objects.all()
@@ -37,11 +38,28 @@ class QuizViewSet(viewsets.ModelViewSet):
 class QuestionViewSet(viewsets.ModelViewSet):
 
     """
-    API endpoint that allows dummy models to be viewed or edited.
+    API endpoint that allows Question models to be viewed or edited.
     """
     permission_classes = (IsAuthenticated,)
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user,
+                        updated_by=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)
+
+
+class TrackerViewSet(viewsets.ModelViewSet):
+
+    """
+    API endpoint that allows Tracker models to be viewed or edited.
+    """
+    permission_classes = (IsAuthenticated,)
+    queryset = Tracker.objects.all()
+    serializer_class = TrackerSerializer
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user,

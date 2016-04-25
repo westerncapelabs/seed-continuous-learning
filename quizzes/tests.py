@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -7,7 +8,7 @@ from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 from rest_hooks.models import Hook
 
-from .models import Quiz, Question
+from .models import Quiz, Question, Tracker
 
 
 class APITestCase(TestCase):
@@ -241,6 +242,56 @@ class TestQuizzesApp(AuthenticatedAPITestCase):
         self.assertEqual(results[0]["description"], "A wonderful quiz 1")
         self.assertEqual(results[0]["questions"], [str(question1.id)])
         self.assertEqual(results[1]["description"], "A wonderful quiz 2")
+
+    def test_create_tracker_model_data(self):
+        quiz = self.make_quiz()
+        post_data = {
+            "identity": "b45d17b6-1291-4825-bfb9-446f6f853dae",
+            "quiz": str(quiz.id)
+        }
+        response = self.client.post('/api/v1/tracker/',
+                                    json.dumps(post_data),
+                                    content_type='application/json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        d = Tracker.objects.last()
+        self.assertEqual(str(d.identity),
+                         "b45d17b6-1291-4825-bfb9-446f6f853dae")
+        self.assertEqual(d.metadata, None)
+        self.assertEqual(d.complete, False)
+        self.assertIsNotNone(d.started_at)
+        self.assertEqual(d.created_by, self.user)
+
+    def test_patch_tracker_model_data(self):
+        quiz = self.make_quiz()
+        post_data = {
+            "identity": "b45d17b6-1291-4825-bfb9-446f6f853dae",
+            "quiz": str(quiz.id)
+        }
+        response = self.client.post('/api/v1/tracker/',
+                                    json.dumps(post_data),
+                                    content_type='application/json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        d = Tracker.objects.last()
+        self.assertEqual(d.complete, False)
+        self.assertIsNone(d.completed_at)
+
+        patch_data = {
+            "complete": True,
+            "completed_at": datetime.now().isoformat()
+        }
+        response = self.client.patch('/api/v1/tracker/%s/' % str(d.id),
+                                     json.dumps(patch_data),
+                                     content_type='application/json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        d = Tracker.objects.last()
+        self.assertEqual(d.complete, True)
+        self.assertIsNotNone(d.completed_at)
 
     def test_create_webhook(self):
         # Setup

@@ -97,3 +97,54 @@ class Quiz(models.Model):
 
     def __str__(self):  # __unicode__ on Python 2
         return str(self.id)
+
+
+@python_2_unicode_compatible
+class Tracker(models.Model):
+
+    """
+    Base Tracker model, holds when an identity takes and finishes a quiz
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    identity = models.UUIDField()
+    quiz = models.ForeignKey(Quiz, related_name='quiz_takers')
+    complete = models.BooleanField(default=False)
+    metadata = JSONField(null=True, blank=True)
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    created_by = models.ForeignKey(User, related_name='trackers_created',
+                                   null=True)
+    updated_by = models.ForeignKey(User, related_name='trackers_updated',
+                                   null=True)
+    user = property(lambda self: self.created_by)
+
+    def __str__(self):  # __unicode__ on Python 2
+        return str(self.id)
+
+
+@python_2_unicode_compatible
+class Answer(models.Model):
+    QUESTION_TYPE_CHOICES = (
+        ('multiplechoice', "Multiple Choice"),
+        ('truefalse', "True/False"),
+        ('freetext', "Freeform Input")
+    )
+    """
+    Base Answer model
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    version = models.IntegerField(default=1)
+    question = models.ForeignKey(Question, related_name='questions_answers')
+    question_text = models.CharField(max_length=200)
+    answer_value = models.CharField(max_length=100)
+    answer_text = models.CharField(max_length=200)
+    answer_correct = models.BooleanField(default=False)
+    response_sent = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(User, related_name='answers_created',
+                                   null=True)
+    updated_by = models.ForeignKey(User, related_name='answers_updated',
+                                   null=True)
+    tracker = models.ForeignKey(Tracker, related_name='answers')
+    user = property(lambda self: self.created_by)
