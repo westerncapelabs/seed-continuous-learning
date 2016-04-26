@@ -377,7 +377,6 @@ class TestQuizzesApp(AuthenticatedAPITestCase):
         self.assertIsNotNone(d.created_at)
         self.assertEqual(d.created_by, self.user)
 
-
     def test_create_webhook(self):
         # Setup
         user = User.objects.get(username='testadminuser')
