@@ -8,7 +8,7 @@ from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 from rest_hooks.models import Hook
 
-from .models import Quiz, Question, Tracker
+from .models import Quiz, Question, Tracker, Answer
 
 
 class APITestCase(TestCase):
@@ -84,6 +84,15 @@ class TestQuizzesApp(AuthenticatedAPITestCase):
             }
         quiz = Quiz.objects.create(**quiz_data)
         return quiz
+
+    def make_tracker(self, tracker_data=None):
+        if tracker_data is None:
+            tracker_data = {
+                "identity": "b45d17b6-1291-4825-bfb9-446f6f853dae",
+                "quiz": self.make_quiz()
+            }
+        tracker = Tracker.objects.create(**tracker_data)
+        return tracker
 
     def test_login(self):
         request = self.client.post(
@@ -292,6 +301,82 @@ class TestQuizzesApp(AuthenticatedAPITestCase):
         d = Tracker.objects.last()
         self.assertEqual(d.complete, True)
         self.assertIsNotNone(d.completed_at)
+
+    def test_create_answer_model_data_correct(self):
+        # create question, quiz and tracker
+        question = self.make_question()
+        quiz = self.make_quiz()
+        quiz.questions = [question]
+        quiz.save()
+        tracker = self.make_tracker(tracker_data={
+            "identity": "b45d17b6-1291-4825-bfb9-446f6f853dae",
+            "quiz": quiz
+        })
+        post_data = {
+            "question": str(question.id),
+            "question_text": "Who is shortest?",
+            "answer_value": "george",
+            "answer_text": "George",
+            "answer_correct": True,
+            "response_sent": "Correct! That's why his desk is so low!",
+            "tracker": str(tracker.id)
+        }
+        response = self.client.post('/api/v1/answer/',
+                                    json.dumps(post_data),
+                                    content_type='application/json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        d = Answer.objects.last()
+        self.assertEqual(str(d.tracker.identity),
+                         "b45d17b6-1291-4825-bfb9-446f6f853dae")
+        self.assertEqual(d.question_text, "Who is shortest?")
+        self.assertEqual(d.answer_value, "george")
+        self.assertEqual(d.answer_text, "George")
+        self.assertEqual(d.answer_correct, True)
+        self.assertEqual(d.response_sent, "Correct! That's why his desk is "
+                                          "so low!")
+        self.assertIsNotNone(d.created_at)
+        self.assertEqual(d.created_by, self.user)
+
+    def test_create_answer_model_data_incorrect(self):
+        # create question, quiz and tracker
+        question = self.make_question()
+        quiz = self.make_quiz()
+        quiz.questions = [question]
+        quiz.save()
+        tracker = self.make_tracker(tracker_data={
+            "identity": "b45d17b6-1291-4825-bfb9-446f6f853dae",
+            "quiz": quiz
+        })
+        post_data = {
+            "question": str(question.id),
+            "question_text": "Who is shortest?",
+            "answer_value": "nicki",
+            "answer_text": "Nicki",
+            "answer_correct": False,
+            "response_sent": "Incorrect! You need to open your eyes "
+                             "and see it's George!",
+            "tracker": str(tracker.id)
+        }
+        response = self.client.post('/api/v1/answer/',
+                                    json.dumps(post_data),
+                                    content_type='application/json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        d = Answer.objects.last()
+        self.assertEqual(str(d.tracker.identity),
+                         "b45d17b6-1291-4825-bfb9-446f6f853dae")
+        self.assertEqual(d.question_text, "Who is shortest?")
+        self.assertEqual(d.answer_value, "nicki")
+        self.assertEqual(d.answer_text, "Nicki")
+        self.assertEqual(d.answer_correct, False)
+        self.assertEqual(d.response_sent, "Incorrect! You need to open your "
+                                          "eyes and see it's George!")
+        self.assertIsNotNone(d.created_at)
+        self.assertEqual(d.created_by, self.user)
+
 
     def test_create_webhook(self):
         # Setup

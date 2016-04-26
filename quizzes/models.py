@@ -124,11 +124,6 @@ class Tracker(models.Model):
 
 @python_2_unicode_compatible
 class Answer(models.Model):
-    QUESTION_TYPE_CHOICES = (
-        ('multiplechoice', "Multiple Choice"),
-        ('truefalse', "True/False"),
-        ('freetext', "Freeform Input")
-    )
     """
     Base Answer model
     """
