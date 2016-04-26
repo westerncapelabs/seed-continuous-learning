@@ -26,6 +26,7 @@ class QuizViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
+    filter_fields = ('active', 'metadata')
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user,
@@ -43,6 +44,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
+    filter_fields = ('question_type', 'active')
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user,
@@ -60,6 +62,7 @@ class AnswerViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
+    filter_fields = ('question', 'tracker', 'answer_correct', 'metadata')
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user,
@@ -77,6 +80,8 @@ class TrackerViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = Tracker.objects.all()
     serializer_class = TrackerSerializer
+    filter_fields = ('identity', 'quiz', 'complete', 'started_at',
+                     'completed_at')
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user,
