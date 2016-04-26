@@ -143,3 +143,6 @@ class Answer(models.Model):
                                    null=True)
     tracker = models.ForeignKey(Tracker, related_name='answers')
     user = property(lambda self: self.created_by)
+
+    def __str__(self):  # __unicode__ on Python 2
+        return str(self.id)
