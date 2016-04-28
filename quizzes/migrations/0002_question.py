@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ('version', models.IntegerField(default=1)),
                 ('question_type', models.CharField(choices=[('multiplechoice', 'Multiple Choice'), ('truefalse', 'True/False'), ('freetext', 'Freeform Input')], max_length=50)),
-                ('question', models.CharField(max_length=200)),
+                ('question', models.CharField(max_length=255)),
                 ('answers', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
                 ('response_correct', models.CharField(max_length=200)),
                 ('response_incorrect', models.CharField(max_length=200)),

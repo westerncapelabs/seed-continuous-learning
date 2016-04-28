@@ -20,7 +20,7 @@ class Question(models.Model):
     version = models.IntegerField(default=1)
     question_type = models.CharField(max_length=50,
                                      choices=QUESTION_TYPE_CHOICES)
-    question = models.CharField(max_length=200)
+    question = models.CharField(max_length=255)
     answers = JSONField(null=True, blank=True)
     response_correct = models.CharField(max_length=200)
     response_incorrect = models.CharField(max_length=200)
