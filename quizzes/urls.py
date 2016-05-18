@@ -12,5 +12,7 @@ router.register(r'webhook', views.HookViewSet)
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browseable API.
 urlpatterns = [
+    url(r'^api/v1/quiz/untaken$',
+        views.QuizzesUntaken.as_view()),
     url(r'^api/v1/', include(router.urls)),
 ]

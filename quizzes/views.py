@@ -1,6 +1,6 @@
 from .models import Quiz, Question, Tracker, Answer
 from rest_hooks.models import Hook
-from rest_framework import viewsets
+from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated
 from .serializers import (QuizSerializer, QuestionSerializer, AnswerSerializer,
                           TrackerSerializer, HookSerializer)
@@ -89,3 +89,19 @@ class TrackerViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save(updated_by=self.request.user)
+
+
+class QuizzesUntaken(generics.ListAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = QuizSerializer
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the quizzes the identity in
+        query parameters hasn't taken.
+        Always excludes quizzes with active = False
+        """
+        identity_id = self.request.query_params['identity']
+        taken = Tracker.objects.filter(
+            complete=True, identity=identity_id).values_list('quiz', flat=True)
+        return Quiz.objects.filter(active=True).exclude(id__in=taken)

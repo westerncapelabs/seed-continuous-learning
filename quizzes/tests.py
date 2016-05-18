@@ -377,6 +377,40 @@ class TestQuizzesApp(AuthenticatedAPITestCase):
         self.assertIsNotNone(d.created_at)
         self.assertEqual(d.created_by, self.user)
 
+    def test_get_quizzes_untaken(self):
+        question = self.make_question()
+        quiz = self.make_quiz()
+        quiz.questions = [question]
+        quiz.save()
+        self.make_tracker(tracker_data={
+            "identity": "b45d17b6-1291-4825-bfb9-446f6f853dae",
+            "quiz": quiz,
+            "complete": True,
+            "completed_at": datetime.now()
+        })
+        # not done
+        question2 = self.make_question()
+        quiz2_data = {
+            "description": "A wonderful quiz 2",
+            "active": True,
+            "metadata": {'a': 'a', 'b': 2}
+        }
+        quiz2 = self.make_quiz(quiz_data=quiz2_data)
+        quiz2.questions = [question2]
+        quiz2.save()
+        notdone = str(quiz2.id)
+
+        response = self.client.get('/api/v1/quiz/untaken?identity=%s' % (
+                                   "b45d17b6-1291-4825-bfb9-446f6f853dae",
+                                   ), content_type='application/json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        results = response.json()["results"]
+
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["id"], notdone)
+
     def test_create_webhook(self):
         # Setup
         user = User.objects.get(username='testadminuser')
