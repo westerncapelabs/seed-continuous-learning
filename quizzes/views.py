@@ -62,7 +62,7 @@ class AnswerViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
-    filter_fields = ('question', 'tracker', 'answer_correct', 'metadata')
+    filter_fields = ('question', 'tracker', 'answer_correct')
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user,
