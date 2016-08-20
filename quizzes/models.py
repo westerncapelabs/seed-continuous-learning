@@ -68,6 +68,7 @@ class Quiz(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     description = models.CharField(max_length=200)
     active = models.BooleanField(default=False)
+    archived = models.BooleanField(default=False)
     metadata = JSONField(null=True, blank=True)
     questions = models.ManyToManyField(Question, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -87,6 +88,8 @@ class Quiz(models.Model):
             'data': {
                 'id': str(self.id),
                 'description': self.description,
+                'active': self.active,
+                'archived': self.archived,
                 'metadata': self.metadata,
                 'created_at': self.created_at.isoformat(),
                 'created_by': self.created_by.username,

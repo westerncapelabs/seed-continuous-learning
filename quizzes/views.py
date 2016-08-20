@@ -26,7 +26,7 @@ class QuizViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
-    filter_fields = ('active', 'metadata')
+    filter_fields = ('active', 'metadata', 'archived')
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user,

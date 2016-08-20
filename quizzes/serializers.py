@@ -9,7 +9,8 @@ class QuizSerializer(serializers.ModelSerializer):
         model = Quiz
         read_only_fields = ('created_at', 'updated_at')
         fields = ('id', 'description', 'metadata', 'questions', 'active',
-                  'created_at', 'created_by', 'updated_at', 'updated_by')
+                  'archived', 'created_at', 'created_by', 'updated_at',
+                  'updated_by')
 
 
 class QuestionSerializer(serializers.ModelSerializer):
