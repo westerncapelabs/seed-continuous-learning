@@ -2,6 +2,10 @@ from .models import Quiz, Question, Tracker, Answer
 from rest_hooks.models import Hook
 from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.settings import api_settings
+from rest_framework_csv import renderers as r
 from .serializers import (QuizSerializer, QuestionSerializer, AnswerSerializer,
                           TrackerSerializer, HookSerializer)
 
@@ -105,3 +109,38 @@ class QuizzesUntaken(generics.ListAPIView):
         taken = Tracker.objects.filter(
             complete=True, identity=identity_id).values_list('quiz', flat=True)
         return Quiz.objects.filter(active=True).exclude(id__in=taken)
+
+
+class QuizResultsCSV(APIView):
+    permission_classes = (IsAuthenticated,)
+    renderer_classes = (r.CSVRenderer, )
+
+    def get(self, request, format=None):
+        """
+        Return a list of all results.
+        """
+        results = Tracker.objects.all()
+        content = []
+        for tracker in results:
+            base = {
+                "tracker": tracker.id,
+                "quiz": tracker.quiz_id,
+                "identity": str(tracker.identity),
+                "quiz_started_at": tracker.started_at,
+                "quiz_complete": tracker.complete,
+                "quiz_completed_at": tracker.completed_at
+            }
+            answers = tracker.answers.all()
+            if answers.count() > 0:
+                for answer in answers:
+                    line = base.copy()
+                    line.update({
+                        "question_id": answer.question_id,
+                        "question_text": answer.question_text,
+                        "answer_text": answer.answer_text,
+                        "answer_value": answer.answer_value,
+                        "answer_correct": answer.answer_correct,
+                        "answer_created_at": answer.created_at
+                    })
+                    content.append(line)
+        return Response(content)

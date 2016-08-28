@@ -12,6 +12,7 @@ setup(
     install_requires=[
         'Django==1.9.1',
         'djangorestframework==3.3.2',
+        'djangorestframework-csv==1.4.1',
         'dj-database-url==0.3.0',
         'psycopg2==2.6.1',
         'raven==5.10.0',

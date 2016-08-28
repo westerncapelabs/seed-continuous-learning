@@ -14,5 +14,7 @@ router.register(r'webhook', views.HookViewSet)
 urlpatterns = [
     url(r'^api/v1/quiz/untaken$',
         views.QuizzesUntaken.as_view()),
+    url(r'^api/v1/tracker/export$',
+        views.QuizResultsCSV.as_view()),
     url(r'^api/v1/', include(router.urls)),
 ]
