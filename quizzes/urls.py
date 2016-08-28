@@ -16,5 +16,7 @@ urlpatterns = [
         views.QuizzesUntaken.as_view()),
     url(r'^api/v1/tracker/export$',
         views.QuizResultsCSV.as_view()),
+    url(r'^api/v1/stats$',
+        views.StatsView.as_view()),
     url(r'^api/v1/', include(router.urls)),
 ]

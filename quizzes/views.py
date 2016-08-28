@@ -1,10 +1,10 @@
+from datetime import datetime, timedelta
 from .models import Quiz, Question, Tracker, Answer
 from rest_hooks.models import Hook
 from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.settings import api_settings
 from rest_framework_csv import renderers as r
 from .serializers import (QuizSerializer, QuestionSerializer, AnswerSerializer,
                           TrackerSerializer, HookSerializer)
@@ -144,3 +144,28 @@ class QuizResultsCSV(APIView):
                     })
                     content.append(line)
         return Response(content)
+
+
+class StatsView(APIView):
+
+    """ Stats view
+        GET - returns some key stat
+    """
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        tracker_complete = Tracker.objects.filter(
+            complete=True,
+            completed_at__gte=datetime.now()-timedelta(days=30)).count()
+        answers = Answer.objects.filter(
+            created_at__gte=datetime.now()-timedelta(days=30))
+        answers_correct = answers.filter(answer_correct=True).count()
+        answers_incorrect = answers.filter(answer_correct=False).count()
+        status = 200
+        resp = {
+            "tracker_complete": tracker_complete,
+            "answered": answers.count(),
+            "answers_correct": answers_correct,
+            "answers_incorrect": answers_incorrect
+        }
+        return Response(resp, status=status)
